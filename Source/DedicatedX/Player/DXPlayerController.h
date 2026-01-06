@@ -18,11 +18,7 @@ class DEDICATEDX_API ADXPlayerController : public APlayerController
 
 public:
 	ADXPlayerController();
-	virtual void PostNetInit() override;
-	virtual void OnActorChannelOpen(FInBunch& InBunch, UNetConnection* Connection) override;
-	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
-	virtual void OnPossess(APawn* InPawn) override;
 
 #pragma endregion
 

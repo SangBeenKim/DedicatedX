@@ -18,8 +18,6 @@ class DEDICATEDX_API ADXGameStateBase : public AGameStateBase
 
 public:
 	ADXGameStateBase();
-	virtual void HandleBeginPlay() override;
-	virtual void OnRep_ReplicatedHasBegunPlay() override;
 
 #pragma endregion
 

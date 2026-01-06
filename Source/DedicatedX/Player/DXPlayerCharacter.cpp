@@ -27,13 +27,10 @@ ADXPlayerCharacter::ADXPlayerCharacter()
 	Camera->bUsePawnControlRotation = false;
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
-	DX_LOG_NET(LogDXNet, Log, TEXT(""));
 }
 
 void ADXPlayerCharacter::BeginPlay()
 {
-	DX_LOG_ROLE(LogDXNet, Warning, TEXT("Begin"));
-
 	Super::BeginPlay();
 	
 	if (IsLocallyControlled())
@@ -57,74 +54,6 @@ void ADXPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 	EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
-}
-
-void ADXPlayerCharacter::PossessedBy(AController* NewController)
-{
-	//DX_LOG_NET(LogDXNet, Log, TEXT("Begin"));
-	DX_LOG_ROLE(LogDXNet, Log, TEXT("Begin"));
-
-	AActor* OwnerActor = GetOwner();
-	if (IsValid(OwnerActor))
-	{
-		DX_LOG_NET(LogDXNet, Log, TEXT("OwnerActor Name: %s"), *OwnerActor->GetName());
-	}
-	else
-	{
-		DX_LOG_NET(LogDXNet, Log, TEXT("There is no OwnerActor."));
-	}
-
-	Super::PossessedBy(NewController);
-
-	OwnerActor = GetOwner();
-	if (IsValid(OwnerActor))
-	{
-		DX_LOG_NET(LogDXNet, Log, TEXT("OwnerActor Name: %s"), *OwnerActor->GetName());
-	}
-	else
-	{
-		DX_LOG_NET(LogDXNet, Log, TEXT("There is no OwnerActor."));
-	}
-
-	//DX_LOG_NET(LogDXNet, Log, TEXT("End"));
-	DX_LOG_ROLE(LogDXNet, Log, TEXT("End"));
-}
-
-void ADXPlayerCharacter::OnRep_Owner()
-{
-	DX_LOG_NET(LogDXNet, Log, TEXT("Begin"));
-
-	Super::OnRep_Owner();
-
-	AActor* OwnerActor = GetOwner();
-	if (IsValid(OwnerActor))
-	{
-		DX_LOG_NET(LogDXNet, Log, TEXT("OwnerActor Name: %s"), *OwnerActor->GetName());
-	}
-	else
-	{
-		DX_LOG_NET(LogDXNet, Log, TEXT("There is no OwnerActor."));
-	}
-
-	DX_LOG_NET(LogDXNet, Log, TEXT("End"));
-}
-
-void ADXPlayerCharacter::PostNetInit()
-{
-	DX_LOG_NET(LogDXNet, Log, TEXT("Begin"));
-
-	Super::PostNetInit();
-
-	DX_LOG_NET(LogDXNet, Log, TEXT("End"));
-}
-
-void ADXPlayerCharacter::OnRep_Controller()
-{
-	DX_LOG_ROLE(LogDXNet, Warning, TEXT("Begin"));
-
-	Super::OnRep_Controller();
-
-	DX_LOG_ROLE(LogDXNet, Warning, TEXT("End"));
 }
 
 void ADXPlayerCharacter::HandleMoveInput(const FInputActionValue& InValue)

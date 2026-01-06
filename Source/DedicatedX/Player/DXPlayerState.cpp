@@ -6,5 +6,4 @@
 
 ADXPlayerState::ADXPlayerState()
 {
-	DX_LOG_NET(LogDXNet, Log, TEXT(""));
 }
