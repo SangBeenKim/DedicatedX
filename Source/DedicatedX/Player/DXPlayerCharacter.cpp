@@ -57,6 +57,63 @@ void ADXPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 }
 
+void ADXPlayerCharacter::PossessedBy(AController* NewController)
+{
+	DX_LOG_NET(LogDXNet, Log, TEXT("Begin"));
+
+	AActor* OwnerActor = GetOwner();
+	if (IsValid(OwnerActor))
+	{
+		DX_LOG_NET(LogDXNet, Log, TEXT("OwnerActor Name: %s"), *OwnerActor->GetName());
+	}
+	else
+	{
+		DX_LOG_NET(LogDXNet, Log, TEXT("There is no OwnerActor."));
+	}
+
+	Super::PossessedBy(NewController);
+
+	OwnerActor = GetOwner();
+	if (IsValid(OwnerActor))
+	{
+		DX_LOG_NET(LogDXNet, Log, TEXT("OwnerActor Name: %s"), *OwnerActor->GetName());
+	}
+	else
+	{
+		DX_LOG_NET(LogDXNet, Log, TEXT("There is no OwnerActor."));
+	}
+
+	DX_LOG_NET(LogDXNet, Log, TEXT("End"));
+}
+
+void ADXPlayerCharacter::OnRep_Owner()
+{
+	DX_LOG_NET(LogDXNet, Log, TEXT("Begin"));
+
+	Super::OnRep_Owner();
+
+	AActor* OwnerActor = GetOwner();
+	if (IsValid(OwnerActor))
+	{
+		DX_LOG_NET(LogDXNet, Log, TEXT("OwnerActor Name: %s"), *OwnerActor->GetName());
+	}
+	else
+	{
+		DX_LOG_NET(LogDXNet, Log, TEXT("There is no OwnerActor."));
+	}
+
+	DX_LOG_NET(LogDXNet, Log, TEXT("End"));
+}
+
+void ADXPlayerCharacter::PostNetInit()
+{
+	DX_LOG_NET(LogDXNet, Log, TEXT("Begin"));
+
+	Super::PostNetInit();
+
+	DX_LOG_NET(LogDXNet, Log, TEXT("End"));
+}
+
 void ADXPlayerCharacter::HandleMoveInput(const FInputActionValue& InValue)
 {
 	if (!IsValid(Controller))

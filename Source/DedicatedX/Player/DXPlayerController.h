@@ -22,6 +22,7 @@ public:
 	virtual void OnActorChannelOpen(FInBunch& InBunch, UNetConnection* Connection) override;
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
+	virtual void OnPossess(APawn* InPawn) override;
 
 #pragma endregion
 

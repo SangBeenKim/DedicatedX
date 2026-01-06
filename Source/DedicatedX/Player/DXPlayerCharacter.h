@@ -23,6 +23,9 @@ public:
 	ADXPlayerCharacter();
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_Owner() override;
+	virtual void PostNetInit() override;
 
 #pragma endregion
 

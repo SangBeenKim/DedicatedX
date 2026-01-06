@@ -65,3 +65,12 @@ void ADXPlayerController::BeginPlay()
 
 	DX_LOG_NET(LogDXNet, Log, TEXT("End"));
 }
+
+void ADXPlayerController::OnPossess(APawn* InPawn)
+{
+	DX_LOG_NET(LogDXNet, Log, TEXT("Begin"));
+
+	Super::OnPossess(InPawn);
+
+	DX_LOG_NET(LogDXNet, Log, TEXT("End"));
+}
