@@ -26,6 +26,7 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_Owner() override;
 	virtual void PostNetInit() override;
+	virtual void OnRep_Controller() override;
 
 #pragma endregion
 

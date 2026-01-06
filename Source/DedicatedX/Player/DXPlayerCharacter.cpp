@@ -32,6 +32,8 @@ ADXPlayerCharacter::ADXPlayerCharacter()
 
 void ADXPlayerCharacter::BeginPlay()
 {
+	DX_LOG_ROLE(LogDXNet, Warning, TEXT("Begin"));
+
 	Super::BeginPlay();
 	
 	if (IsLocallyControlled())
@@ -59,7 +61,8 @@ void ADXPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void ADXPlayerCharacter::PossessedBy(AController* NewController)
 {
-	DX_LOG_NET(LogDXNet, Log, TEXT("Begin"));
+	//DX_LOG_NET(LogDXNet, Log, TEXT("Begin"));
+	DX_LOG_ROLE(LogDXNet, Log, TEXT("Begin"));
 
 	AActor* OwnerActor = GetOwner();
 	if (IsValid(OwnerActor))
@@ -83,7 +86,8 @@ void ADXPlayerCharacter::PossessedBy(AController* NewController)
 		DX_LOG_NET(LogDXNet, Log, TEXT("There is no OwnerActor."));
 	}
 
-	DX_LOG_NET(LogDXNet, Log, TEXT("End"));
+	//DX_LOG_NET(LogDXNet, Log, TEXT("End"));
+	DX_LOG_ROLE(LogDXNet, Log, TEXT("End"));
 }
 
 void ADXPlayerCharacter::OnRep_Owner()
@@ -112,6 +116,15 @@ void ADXPlayerCharacter::PostNetInit()
 	Super::PostNetInit();
 
 	DX_LOG_NET(LogDXNet, Log, TEXT("End"));
+}
+
+void ADXPlayerCharacter::OnRep_Controller()
+{
+	DX_LOG_ROLE(LogDXNet, Warning, TEXT("Begin"));
+
+	Super::OnRep_Controller();
+
+	DX_LOG_ROLE(LogDXNet, Warning, TEXT("End"));
 }
 
 void ADXPlayerCharacter::HandleMoveInput(const FInputActionValue& InValue)
