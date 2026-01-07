@@ -1,11 +1,14 @@
 #include "Gimmick/DXBox.h"
 #include "DedicatedX.h"
 #include "Components/TextRenderComponent.h"
+#include "Net/UnrealNetwork.h"
 
 ADXBox::ADXBox()
 	: SceneRoot(nullptr)
 	, Mesh(nullptr)
 	, TextRender(nullptr)
+	, ServerRotationYaw(0.f)
+	, RotationSpeed(30.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
@@ -29,6 +32,28 @@ void ADXBox::BeginPlay()
 	Super::BeginPlay();
 	
 	DX_LOG_ROLE(LogDXNet, Log, TEXT(""));
+}
+
+void ADXBox::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, ServerRotationYaw);
+}
+
+void ADXBox::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (HasAuthority())
+	{
+		AddActorLocalRotation(FRotator(0.f, RotationSpeed * DeltaSeconds, 0.f));
+		ServerRotationYaw = RootComponent->GetComponentRotation().Yaw;
+	}
+	else
+	{
+		SetActorRotation(FRotator(0.f, ServerRotationYaw, 0.f));
+	}
 }
 
 

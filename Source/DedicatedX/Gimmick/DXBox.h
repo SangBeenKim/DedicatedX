@@ -16,6 +16,8 @@ class DEDICATEDX_API ADXBox : public AActor
 public:	
 	ADXBox();
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const override;
+	virtual void Tick(float DeltaSeconds) override;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -24,5 +26,7 @@ protected:
 	TObjectPtr<UStaticMeshComponent> Mesh;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UTextRenderComponent> TextRender;
-
+	UPROPERTY(Replicated)
+	float ServerRotationYaw;
+	float RotationSpeed;
 };
