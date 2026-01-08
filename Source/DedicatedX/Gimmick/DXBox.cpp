@@ -52,8 +52,15 @@ void ADXBox::Tick(float DeltaSeconds)
 	}
 	else
 	{
-		SetActorRotation(FRotator(0.f, ServerRotationYaw, 0.f));
+		//SetActorRotation(FRotator(0.f, ServerRotationYaw, 0.f));
 	}
+}
+
+void ADXBox::OnRep_ServerRotationYaw()
+{
+	DX_LOG_NET(LogDXNet, Log, TEXT("OnRep_ServerRotationYaw(): %f"), ServerRotationYaw);
+
+	SetActorRotation(FRotator(0.f, ServerRotationYaw, 0.f));
 }
 
 
