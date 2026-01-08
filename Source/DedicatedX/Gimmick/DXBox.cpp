@@ -9,9 +9,16 @@ ADXBox::ADXBox()
 	, TextRender(nullptr)
 	, ServerRotationYaw(0.f)
 	, RotationSpeed(30.f)
+	, NetUpdatePeriod(0.f)
+	, AccDeltaSecondSinceReplicated(0.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
+
+	const static float BoxActorNetUpdateFrequency = 1.f;
+	SetNetUpdateFrequency(BoxActorNetUpdateFrequency);
+
+	NetUpdatePeriod = 1 / GetNetUpdateFrequency();
 
 	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
 	SetRootComponent(SceneRoot);
@@ -52,7 +59,17 @@ void ADXBox::Tick(float DeltaSeconds)
 	}
 	else
 	{
-		//SetActorRotation(FRotator(0.f, ServerRotationYaw, 0.f));
+		if (NetUpdatePeriod < KINDA_SMALL_NUMBER)
+		{
+			return;
+		}
+
+		AccDeltaSecondSinceReplicated += DeltaSeconds;
+		const float LerpRatio = FMath::Clamp(AccDeltaSecondSinceReplicated / NetUpdatePeriod, 0.f, 1.f);
+		const float NextServerRotationYaw = ServerRotationYaw + RotationSpeed * NetUpdatePeriod;
+		const float EstimatedClientRotationYaw = FMath::Lerp(ServerRotationYaw, NextServerRotationYaw, LerpRatio);
+
+		SetActorRotation(FRotator(0.f, EstimatedClientRotationYaw, 0.f));
 	}
 }
 
@@ -60,7 +77,9 @@ void ADXBox::OnRep_ServerRotationYaw()
 {
 	DX_LOG_NET(LogDXNet, Log, TEXT("OnRep_ServerRotationYaw(): %f"), ServerRotationYaw);
 
-	SetActorRotation(FRotator(0.f, ServerRotationYaw, 0.f));
+	//SetActorRotation(FRotator(0.f, ServerRotationYaw, 0.f));
+
+	AccDeltaSecondSinceReplicated = 0.f;
 }
 
 

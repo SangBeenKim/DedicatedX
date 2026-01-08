@@ -33,4 +33,6 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_ServerRotationYaw)
 	float ServerRotationYaw;
 	float RotationSpeed;
+	float NetUpdatePeriod;
+	float AccDeltaSecondSinceReplicated;
 };
