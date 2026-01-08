@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "DedicatedX.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 ADXPlayerCharacter::ADXPlayerCharacter()
 {
@@ -53,6 +54,7 @@ void ADXPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::HandleLookInput);
 	EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 	EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+	EIC->BindAction(LandMineAction, ETriggerEvent::Started, this, &ThisClass::HandleLandMineInput);
 
 }
 
@@ -88,5 +90,17 @@ void ADXPlayerCharacter::HandleLookInput(const FInputActionValue& InValue)
 
 	AddControllerYawInput(InLookVector.X);
 	AddControllerPitchInput(InLookVector.Y);
+}
+
+void ADXPlayerCharacter::HandleLandMineInput(const FInputActionValue& InValue)
+{
+	UKismetSystemLibrary::PrintString(
+		this,
+		FString::Printf(TEXT("HandleLandMineInput()")),
+		true,
+		true,
+		FLinearColor::Green,
+		5.f
+	);
 }
 
