@@ -40,6 +40,14 @@ protected:
 
 #pragma endregion
 
+#pragma region LandMine
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AActor> LandMineClass;
+
+#pragma endregion
+
 #pragma region Input
 private:
 	void HandleMoveInput(const FInputActionValue& InValue);

@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "DedicatedX.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Gimmick/DXLandMine.h"
 
 ADXPlayerCharacter::ADXPlayerCharacter()
 {
@@ -94,13 +95,10 @@ void ADXPlayerCharacter::HandleLookInput(const FInputActionValue& InValue)
 
 void ADXPlayerCharacter::HandleLandMineInput(const FInputActionValue& InValue)
 {
-	UKismetSystemLibrary::PrintString(
-		this,
-		FString::Printf(TEXT("HandleLandMineInput()")),
-		true,
-		true,
-		FLinearColor::Green,
-		5.f
-	);
+	if (IsValid(LandMineClass))
+	{
+		FVector SpawnedLocation = (GetActorLocation() + GetActorForwardVector() * 300.f) - FVector(0.f, 0.f, 90.f);
+		ADXLandMine* SpawnedLandMine = GetWorld()->SpawnActor<ADXLandMine>(LandMineClass, SpawnedLocation, FRotator::ZeroRotator);
+	}
 }
 
