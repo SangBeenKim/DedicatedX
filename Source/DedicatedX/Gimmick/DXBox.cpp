@@ -11,6 +11,7 @@ ADXBox::ADXBox()
 	, RotationSpeed(30.f)
 	, NetUpdatePeriod(0.f)
 	, AccDeltaSecondSinceReplicated(0.f)
+	, NetCullDistance(1000.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
@@ -19,6 +20,8 @@ ADXBox::ADXBox()
 	SetNetUpdateFrequency(BoxActorNetUpdateFrequency);
 
 	NetUpdatePeriod = 1 / GetNetUpdateFrequency();
+
+	SetNetCullDistanceSquared(NetCullDistance * NetCullDistance);
 
 	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
 	SetRootComponent(SceneRoot);
@@ -71,6 +74,20 @@ void ADXBox::Tick(float DeltaSeconds)
 
 		SetActorRotation(FRotator(0.f, EstimatedClientRotationYaw, 0.f));
 	}
+
+	DrawDebugSphere(GetWorld(), GetActorLocation(), NetCullDistance / 2.f, 16, FColor::Green, false, -1.f);
+}
+
+bool ADXBox::IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const
+{
+	bool bIsNetRelevant = Super::IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);
+
+	if (!bIsNetRelevant)
+	{
+		DX_LOG_NET(LogDXNet, Log, TEXT("%s is not relevant for(%s, %s)"), *GetName(), *RealViewer->GetName(), *ViewTarget->GetName());
+	}
+
+	return bIsNetRelevant;
 }
 
 void ADXBox::OnRep_ServerRotationYaw()
