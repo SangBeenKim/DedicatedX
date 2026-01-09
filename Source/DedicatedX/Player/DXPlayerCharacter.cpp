@@ -65,6 +65,8 @@ void ADXPlayerCharacter::ServerRPCSpawnLandMine_Implementation()
 	{
 		FVector SpawnedLocation = (GetActorLocation() + GetActorForwardVector() * 300.f) - FVector(0.f, 0.f, 90.f);
 		ADXLandMine* SpawnedLandMine = GetWorld()->SpawnActor<ADXLandMine>(LandMineClass, SpawnedLocation, FRotator::ZeroRotator);
+
+		SpawnedLandMine->SetOwner(this);
 	}
 }
 
