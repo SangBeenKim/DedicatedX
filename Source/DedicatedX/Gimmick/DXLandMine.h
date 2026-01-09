@@ -8,6 +8,7 @@ class USceneComponent;
 class UBoxComponent;
 class UStaticMeshComponent;
 class UParticleSystemComponent;
+class UMaterial;
 
 UCLASS()
 class DEDICATEDX_API ADXLandMine : public AActor
@@ -16,6 +17,7 @@ class DEDICATEDX_API ADXLandMine : public AActor
 	
 public:	
 	ADXLandMine();
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -24,6 +26,8 @@ private:
 	void OnLandMineBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCSpawnEffect();
+	UFUNCTION()
+	void OnRep_IsExploded();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess))
@@ -34,4 +38,11 @@ private:
 	TObjectPtr<UStaticMeshComponent> Mesh;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess))
 	TObjectPtr<UParticleSystemComponent> Particle;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess))
+	float NetCullDistance;
+	UPROPERTY(ReplicatedUsing = OnRep_IsExploded)
+	uint8 bIsExploded : 1;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess))
+	TObjectPtr<UMaterial> ExplodedMaterial;
+
 };
