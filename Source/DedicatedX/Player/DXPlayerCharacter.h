@@ -23,6 +23,8 @@ public:
 	ADXPlayerCharacter();
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void Tick(float DeltaTime) override;
 
 #pragma endregion
 
@@ -53,7 +55,13 @@ protected:
 #pragma endregion
 
 #pragma region Input
+
+public:
+	inline float GetCurrentAimPitch() const { return CurrentAimPitch; }
+
 private:
+	UFUNCTION(Server, Unreliable)
+	void ServerRPCUpdateAimValue(const float& InAimPitchValue);
 	void HandleMoveInput(const FInputActionValue& InValue);
 	void HandleLookInput(const FInputActionValue& InValue);
 	void HandleLandMineInput(const FInputActionValue& InValue);
@@ -69,6 +77,9 @@ protected:
 	TObjectPtr<UInputAction> JumpAction;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DXPlayerCharacter|Input")
 	TObjectPtr<UInputAction> LandMineAction;
+	UPROPERTY(Replicated)
+	float CurrentAimPitch;
+	float PrevioutAimPitch;
 
 #pragma endregion
 

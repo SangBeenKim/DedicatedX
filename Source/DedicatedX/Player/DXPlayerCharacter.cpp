@@ -7,10 +7,13 @@
 #include "DedicatedX.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Gimmick/DXLandMine.h"
+#include "Net/UnrealNetwork.h"
 
 ADXPlayerCharacter::ADXPlayerCharacter()
+	: CurrentAimPitch(0.f)
+	, PrevioutAimPitch(0.f)
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -59,6 +62,32 @@ void ADXPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 }
 
+void ADXPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, CurrentAimPitch);
+}
+
+void ADXPlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (IsValid(GetController()))
+	{
+		PrevioutAimPitch = CurrentAimPitch;
+
+		FRotator ControlRotation = GetController()->GetControlRotation();
+		float NormalizedPitch = FRotator::NormalizeAxis(ControlRotation.Pitch);
+		CurrentAimPitch = FMath::Clamp(NormalizedPitch, -90.f, 90.f);
+	}
+
+	if (IsLocallyControlled() == true && PrevioutAimPitch != CurrentAimPitch)
+	{
+		ServerRPCUpdateAimValue(CurrentAimPitch);
+	}
+}
+
 void ADXPlayerCharacter::ServerRPCSpawnLandMine_Implementation()
 {
 	if (IsValid(LandMineClass))
@@ -73,6 +102,11 @@ void ADXPlayerCharacter::ServerRPCSpawnLandMine_Implementation()
 bool ADXPlayerCharacter::ServerRPCSpawnLandMine_Validate()
 {
 	return true;
+}
+
+void ADXPlayerCharacter::ServerRPCUpdateAimValue_Implementation(const float& InAimPitchValue)
+{
+	CurrentAimPitch = InAimPitchValue;
 }
 
 void ADXPlayerCharacter::HandleMoveInput(const FInputActionValue& InValue)
