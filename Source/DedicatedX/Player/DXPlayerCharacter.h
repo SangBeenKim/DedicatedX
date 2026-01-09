@@ -42,6 +42,10 @@ protected:
 
 #pragma region LandMine
 
+private:
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCSpawnLandMine();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AActor> LandMineClass;

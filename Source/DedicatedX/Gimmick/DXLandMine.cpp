@@ -6,6 +6,7 @@
 ADXLandMine::ADXLandMine()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
 
 	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
 	SetRootComponent(SceneRoot);
