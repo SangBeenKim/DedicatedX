@@ -28,3 +28,11 @@ void UDXAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
 	bIsFalling = OwnerCharacterMovementComponent->IsFalling();
 	AimPitch = OwnerCharacter->GetCurrentAimPitch();
 }
+
+void UDXAnimInstanceBase::AnimNotify_CheckMeleeAttackHit()
+{
+	if (IsValid(OwnerCharacter))
+	{
+		OwnerCharacter->CheckMeleeAttackHit();
+	}
+}

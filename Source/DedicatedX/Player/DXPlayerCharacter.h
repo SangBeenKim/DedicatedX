@@ -10,6 +10,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class UInputMappingContext;
 class UInputAction;
+class UAnimMontage;
 struct FInputActionValue;
 
 UCLASS()
@@ -65,6 +66,7 @@ private:
 	void HandleMoveInput(const FInputActionValue& InValue);
 	void HandleLookInput(const FInputActionValue& InValue);
 	void HandleLandMineInput(const FInputActionValue& InValue);
+	void HandleMeleeAttackInput(const FInputActionValue& InValue);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DXPlayerCharacter|Input")
@@ -77,9 +79,38 @@ protected:
 	TObjectPtr<UInputAction> JumpAction;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DXPlayerCharacter|Input")
 	TObjectPtr<UInputAction> LandMineAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DXPlayerCharacter|Input")
+	TObjectPtr<UInputAction> MeleeAttackAction;
 	UPROPERTY(Replicated)
 	float CurrentAimPitch;
 	float PrevioutAimPitch;
+
+#pragma endregion
+
+#pragma region Attack
+
+public:
+	virtual float TakeDamage(
+		float DamageAmount, 
+		struct FDamageEvent const& DamageEvent, 
+		class AController* EventInstigator, 
+		AActor* DamageCauser
+	) override;
+	void CheckMeleeAttackHit();
+
+private:
+	UFUNCTION(Server, Reliable)
+	void ServerRPCMeleeAttack();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCMeleeAttack();
+	UFUNCTION()
+	void HandleMontageEnd(UAnimMontage* Montage, bool bInterrupted);
+	void PlayMeleeAttackMontage();
+	void DrawDebugMeleeAttack(const FColor& DrawColor, FVector TraceStart, FVector TraceEnd, FVector Forward);
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UAnimMontage> MeleeAttackMontage;
 
 #pragma endregion
 

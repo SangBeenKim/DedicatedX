@@ -8,6 +8,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Gimmick/DXLandMine.h"
 #include "Net/UnrealNetwork.h"
+#include "Components/CapsuleComponent.h"
+#include "Engine/DamageEvents.h"
 
 ADXPlayerCharacter::ADXPlayerCharacter()
 	: CurrentAimPitch(0.f)
@@ -59,6 +61,7 @@ void ADXPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 	EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 	EIC->BindAction(LandMineAction, ETriggerEvent::Started, this, &ThisClass::HandleLandMineInput);
+	EIC->BindAction(MeleeAttackAction, ETriggerEvent::Started, this, &ThisClass::HandleMeleeAttackInput);
 
 }
 
@@ -149,5 +152,140 @@ void ADXPlayerCharacter::HandleLandMineInput(const FInputActionValue& InValue)
 	{
 		ServerRPCSpawnLandMine();
 	}
+}
+
+void ADXPlayerCharacter::HandleMeleeAttackInput(const FInputActionValue& InValue)
+{
+	//UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	//if (!IsValid(AnimInstance)) return;
+
+	//if (AnimInstance->Montage_IsPlaying(MeleeAttackMontage)) return;
+
+	//if (GetCharacterMovement()->IsFalling()) return;
+
+	//AnimInstance->Montage_Play(MeleeAttackMontage);
+
+	ServerRPCMeleeAttack();
+
+	PlayMeleeAttackMontage();
+}
+
+float ADXPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	UKismetSystemLibrary::PrintString(
+		GetWorld(), 
+		FString::Printf(TEXT("TakeDamage: %f"), DamageAmount), 
+		true, 
+		true, 
+		FLinearColor::Red, 
+		5.f
+	);
+
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void ADXPlayerCharacter::CheckMeleeAttackHit()
+{
+	if (!HasAuthority()) return;
+
+	TArray<FHitResult> OutHitResults;
+	TSet<ACharacter*> DamagedCharacters;
+	FCollisionQueryParams Params(NAME_None, false, this);
+
+	const float MeleeAttackRange = 50.f;
+	const float MeleeAttackRadius = 50.f;
+	const float MeleeAttackDamage = 10.f;
+	const FVector Forward = GetActorForwardVector();
+	const FVector Start = GetActorLocation() + Forward * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector End = Start + GetActorForwardVector() * MeleeAttackRange;
+
+	bool bIsHitDetected = GetWorld()->SweepMultiByChannel(
+		OutHitResults,
+		Start,
+		End,
+		FQuat::Identity,
+		ECC_Camera,
+		FCollisionShape::MakeSphere(MeleeAttackRadius),
+		Params
+	);
+	
+	if (bIsHitDetected == true)
+	{
+		for (auto const& OutHitResult : OutHitResults)
+		{
+			ACharacter* DamagedCharacter = Cast<ACharacter>(OutHitResult.GetActor());
+			if (IsValid(DamagedCharacter))
+			{
+				DamagedCharacters.Add(DamagedCharacter);
+			}
+		}
+	}
+
+	FColor DrawColor = bIsHitDetected ? FColor::Green : FColor::Red;
+
+	DrawDebugMeleeAttack(DrawColor, Start, End, Forward);
+}
+
+void ADXPlayerCharacter::ServerRPCMeleeAttack_Implementation()
+{
+	MulticastRPCMeleeAttack();
+}
+
+void ADXPlayerCharacter::MulticastRPCMeleeAttack_Implementation()
+{
+	if (HasAuthority()) return;
+
+	if (IsLocallyControlled()) return;
+
+	PlayMeleeAttackMontage();
+}
+
+void ADXPlayerCharacter::HandleMontageEnd(UAnimMontage* Montage, bool bInterrupted)
+{
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (IsValid(AnimInstance) && AnimInstance->OnMontageEnded.IsAlreadyBound(this, &ThisClass::HandleMontageEnd))
+	{
+		AnimInstance->OnMontageEnded.RemoveDynamic(this, &ThisClass::HandleMontageEnd);
+	}
+}
+
+void ADXPlayerCharacter::PlayMeleeAttackMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!IsValid(AnimInstance)) return;
+
+	if (AnimInstance->Montage_IsPlaying(MeleeAttackMontage)) return;
+
+	if (GetCharacterMovement()->IsFalling()) return;
+
+	AnimInstance->StopAllMontages(0.f);
+	AnimInstance->Montage_Play(MeleeAttackMontage);
+
+	GetCharacterMovement()->SetMovementMode(MOVE_None);
+
+	if (!AnimInstance->OnMontageEnded.IsAlreadyBound(this, &ThisClass::HandleMontageEnd))
+	{
+		AnimInstance->OnMontageEnded.AddDynamic(this, &ThisClass::HandleMontageEnd);
+	}
+}
+
+void ADXPlayerCharacter::DrawDebugMeleeAttack(const FColor& DrawColor, FVector TraceStart, FVector TraceEnd, FVector Forward)
+{
+	const float MeleeAttackRange = 50.f;
+	const float MeleeAttackRadius = 50.f;
+	FVector CapsuleOrigin = TraceStart + (TraceEnd - TraceStart) * 0.5f;
+	float CapsuleHalfHeight = MeleeAttackRange * 0.5f;
+	DrawDebugCapsule(
+		GetWorld(),
+		CapsuleOrigin,
+		CapsuleHalfHeight,
+		MeleeAttackRadius,
+		FRotationMatrix::MakeFromZ(Forward).ToQuat(),
+		DrawColor,
+		false,
+		5.f
+	);
 }
 
