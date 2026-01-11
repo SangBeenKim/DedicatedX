@@ -11,6 +11,9 @@ class USpringArmComponent;
 class UInputMappingContext;
 class UInputAction;
 class UAnimMontage;
+class UDXStatusComponent;
+class UDXHPTextWidgetComponent;
+class UUW_HPText;
 struct FInputActionValue;
 
 UCLASS()
@@ -40,6 +43,10 @@ protected:
 	TObjectPtr<USpringArmComponent> SpringArm;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DXPlayerCharacter|Components")
 	TObjectPtr<UCameraComponent> Camera;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DXPlayerCharacter|Components")
+	TObjectPtr<UDXStatusComponent> StatusComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DXPlayerCharacter|Components")
+	TObjectPtr<UDXHPTextWidgetComponent> HPTextWidgetComponent;
 
 #pragma endregion
 
@@ -111,6 +118,13 @@ private:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UAnimMontage> MeleeAttackMontage;
+
+#pragma endregion
+
+#pragma region HPWidget
+
+public:
+	void SetHPTextWidget(UUW_HPText* InHPTextWidget);
 
 #pragma endregion
 

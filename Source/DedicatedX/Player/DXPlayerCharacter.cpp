@@ -10,6 +10,11 @@
 #include "Net/UnrealNetwork.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
+#include "Component/DXStatusComponent.h"
+#include "Component/DXHPTextWidgetComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "UI/UW_HPText.h"
 
 ADXPlayerCharacter::ADXPlayerCharacter()
 	: CurrentAimPitch(0.f)
@@ -34,6 +39,13 @@ ADXPlayerCharacter::ADXPlayerCharacter()
 	Camera->bUsePawnControlRotation = false;
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
+	StatusComponent = CreateDefaultSubobject<UDXStatusComponent>(TEXT("StatusComponent"));
+
+	HPTextWidgetComponent = CreateDefaultSubobject<UDXHPTextWidgetComponent>(TEXT("HPTextWidgetComponent"));
+	HPTextWidgetComponent->SetupAttachment(GetRootComponent());
+	HPTextWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 100.f));
+	HPTextWidgetComponent->SetWidgetSpace(EWidgetSpace::World);
+	HPTextWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ADXPlayerCharacter::BeginPlay()
@@ -88,6 +100,13 @@ void ADXPlayerCharacter::Tick(float DeltaTime)
 	if (IsLocallyControlled() == true && PrevioutAimPitch != CurrentAimPitch)
 	{
 		ServerRPCUpdateAimValue(CurrentAimPitch);
+	}
+
+	if (IsValid(HPTextWidgetComponent) == true && GetNetMode() != NM_DedicatedServer)
+	{
+		FVector WidgetComponentLocation = HPTextWidgetComponent->GetComponentLocation();
+		FVector LocalPlayerCameraLocation = UGameplayStatics::GetPlayerCameraManager(this, 0)->GetCameraLocation();
+		HPTextWidgetComponent->SetWorldRotation(UKismetMathLibrary::FindLookAtRotation(WidgetComponentLocation, LocalPlayerCameraLocation));
 	}
 }
 
@@ -181,7 +200,12 @@ float ADXPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 		5.f
 	);
 
-	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	//return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	StatusComponent->ApplyDamage(ActualDamage);
+
+	return ActualDamage;
 }
 
 void ADXPlayerCharacter::CheckMeleeAttackHit()
@@ -287,5 +311,16 @@ void ADXPlayerCharacter::DrawDebugMeleeAttack(const FColor& DrawColor, FVector T
 		false,
 		5.f
 	);
+}
+
+void ADXPlayerCharacter::SetHPTextWidget(UUW_HPText* InHPTextWidget)
+{
+	UUW_HPText* HPWidget = Cast<UUW_HPText>(InHPTextWidget);
+	if (IsValid(HPWidget))
+	{
+		HPWidget->InitializeHPTextWidget(StatusComponent);
+		StatusComponent->OnCurrentHPChanged.AddUObject(HPWidget, &UUW_HPText::OnCurrentHPChange);
+		StatusComponent->OnMaxHPChanged.AddUObject(HPWidget, &UUW_HPText::OnMaxHPChange);
+	}
 }
 
