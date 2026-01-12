@@ -175,15 +175,6 @@ void ADXPlayerCharacter::HandleLandMineInput(const FInputActionValue& InValue)
 
 void ADXPlayerCharacter::HandleMeleeAttackInput(const FInputActionValue& InValue)
 {
-	//UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	//if (!IsValid(AnimInstance)) return;
-
-	//if (AnimInstance->Montage_IsPlaying(MeleeAttackMontage)) return;
-
-	//if (GetCharacterMovement()->IsFalling()) return;
-
-	//AnimInstance->Montage_Play(MeleeAttackMontage);
-
 	ServerRPCMeleeAttack();
 
 	PlayMeleeAttackMontage();
@@ -199,8 +190,6 @@ float ADXPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 		FLinearColor::Red, 
 		5.f
 	);
-
-	//return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	StatusComponent->ApplyDamage(ActualDamage);
@@ -243,6 +232,12 @@ void ADXPlayerCharacter::CheckMeleeAttackHit()
 				DamagedCharacters.Add(DamagedCharacter);
 			}
 		}
+
+		FDamageEvent DamageEvent;
+		for (auto const& DamagedCharacter : DamagedCharacters)
+		{
+			DamagedCharacter->TakeDamage(MeleeAttackDamage, DamageEvent, GetController(), this);
+		}
 	}
 
 	FColor DrawColor = bIsHitDetected ? FColor::Green : FColor::Red;
@@ -253,6 +248,8 @@ void ADXPlayerCharacter::CheckMeleeAttackHit()
 void ADXPlayerCharacter::ServerRPCMeleeAttack_Implementation()
 {
 	MulticastRPCMeleeAttack();
+
+	PlayMeleeAttackMontage();
 }
 
 void ADXPlayerCharacter::MulticastRPCMeleeAttack_Implementation()
