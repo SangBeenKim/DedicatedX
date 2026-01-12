@@ -28,4 +28,5 @@ void ADXTitlePlayerController::JoinServer(const FString& InIPAddress)
 {
 	FName NextLevelName = FName(*InIPAddress);
 	UGameplayStatics::OpenLevel(GetWorld(), NextLevelName, true);
+	//GetWorld()->GetFirstPlayerController()->ClientTravel(InIPAddress, TRAVEL_Absolute);
 }

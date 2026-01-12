@@ -18,5 +18,5 @@ private:
 	TSubclassOf<UUserWidget> UIWidgetClass;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ASUIPlayerController", meta = (AllowPrivateAccess))
 	TObjectPtr<UUserWidget> UIWidgetInstance;
-
+	
 };

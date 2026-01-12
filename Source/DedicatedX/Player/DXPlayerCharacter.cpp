@@ -59,6 +59,8 @@ void ADXPlayerCharacter::BeginPlay()
 
 		UEnhancedInputLocalPlayerSubsystem* EILPS = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
 		EILPS->AddMappingContext(InputMappingContext, 0);
+
+		
 	}
 }
 
