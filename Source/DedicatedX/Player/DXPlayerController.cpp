@@ -12,13 +12,15 @@ void ADXPlayerController::BeginPlay()
 
 	if (!IsLocalController()) return;
 
+	FInputModeGameOnly GameOnly;
+	SetInputMode(GameOnly);
+
 	if (IsValid(NotificationTextUIClass))
 	{
 		UUserWidget* NotificationTextUI = CreateWidget<UUserWidget>(this, NotificationTextUIClass);
 		if (IsValid(NotificationTextUI))
 		{
 			NotificationTextUI->AddToViewport(1);
-
 			NotificationTextUI->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
