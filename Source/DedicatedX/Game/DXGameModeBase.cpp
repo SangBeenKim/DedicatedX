@@ -1,5 +1,6 @@
 #include "Game/DXGameModeBase.h"
 #include "Player/DXPlayerController.h"
+#include "Game/DXGameStateBase.h"
 
 ADXGameModeBase::ADXGameModeBase()
 {
@@ -33,6 +34,76 @@ void ADXGameModeBase::Logout(AController* Exiting)
 	}
 }
 
+void ADXGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	GetWorld()->GetTimerManager().SetTimer(MainTimerHandle, this, &ThisClass::OnMainTimerElapesd, 1.f, true);
+	RemainWaitingTimeForPlaying = WaitingTime;
+}
+
+void ADXGameModeBase::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+
+	ADXGameStateBase* DXGS = GetGameState<ADXGameStateBase>();
+	if (!IsValid(DXGS)) return;
+
+	if (DXGS->MatchState != EMatchState::Waiting)
+	{
+		ErrorMessage = FString(TEXT("DXGameState->MatchState != EMatchState::Waiting"));
+		return;
+	}
+}
+
+void ADXGameModeBase::OnMainTimerElapesd()
+{
+	ADXGameStateBase* DXGS = GetGameState<ADXGameStateBase>();
+	if (!IsValid(DXGS)) return;
+
+	switch (DXGS->MatchState)
+	{
+	case EMatchState::None:
+		break;
+	case EMatchState::Waiting: 
+	{
+		FString NotificationString = FString::Printf(TEXT(""));
+
+		if (AlivePlayerControllers.Num() < MinimumPlayerCountForPlaying)
+		{
+			NotificationString = FString::Printf(TEXT("Wait another players for playing."));
+
+			RemainWaitingTimeForPlaying = WaitingTime;
+		}
+		else
+		{
+			NotificationString = FString::Printf(TEXT("Wait %d seconds for playing."), RemainWaitingTimeForPlaying);
+
+			--RemainWaitingTimeForPlaying;
+		}
+
+		if (RemainWaitingTimeForPlaying <= 0)
+		{
+			NotificationString = FString::Printf(TEXT(""));
+
+			DXGS->MatchState = EMatchState::Playing;
+		}
+
+		NotifyToAllPlayer(NotificationString);
+
+		break;
+	}
+	case EMatchState::Playing:
+		break;
+	case EMatchState::Ending:
+		break;
+	case EMatchState::End:
+		break;
+	default:
+		break;
+	}
+}
+
 void ADXGameModeBase::RefreshPlayerControllers()
 {
 	for (int32 i = AlivePlayerControllers.Num() - 1; i >= 0; --i)
@@ -53,5 +124,18 @@ void ADXGameModeBase::RefreshPlayerControllers()
 			DeadPlayerControllers.RemoveAt(i);
 			continue;
 		}
+	}
+}
+
+void ADXGameModeBase::NotifyToAllPlayer(const FString& NotificationString)
+{
+	for (auto AlivePlayerController : AlivePlayerControllers)
+	{
+		AlivePlayerController->NotificationText = FText::FromString(NotificationString);
+	}
+
+	for (auto DeadPlayerController : DeadPlayerControllers)
+	{
+		DeadPlayerController->NotificationText = FText::FromString(NotificationString);
 	}
 }
