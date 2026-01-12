@@ -1,11 +1,20 @@
 #include "Component/DXStatusComponent.h"
+#include "Net/UnrealNetwork.h"
 
 UDXStatusComponent::UDXStatusComponent()
 	: CurrentHP(100.f)
 	, MaxHP(100.f)
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	SetIsReplicatedByDefault(true);
+}
 
+void UDXStatusComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, CurrentHP);
+	DOREPLIFETIME(ThisClass, MaxHP);
 }
 
 float UDXStatusComponent::ApplyDamage(float InDamage)
@@ -40,5 +49,15 @@ void UDXStatusComponent::SetMaxHP(float InMaxHP)
 
 	OnMaxHPChanged.Broadcast(MaxHP);
 
+}
+
+void UDXStatusComponent::OnRep_CurrentHP()
+{
+	OnCurrentHPChanged.Broadcast(CurrentHP);
+}
+
+void UDXStatusComponent::OnRep_MaxHP()
+{
+	OnMaxHPChanged.Broadcast(MaxHP);
 }
 

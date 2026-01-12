@@ -15,19 +15,27 @@ class DEDICATEDX_API UDXStatusComponent : public UActorComponent
 
 public:	
 	UDXStatusComponent();
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	float ApplyDamage(float InDamage);
 	inline float GetCurrentHP() const { return CurrentHP; }
 	void SetCurrentHP(float InCurrentHP);
 	inline float GetMaxHP() const { return MaxHP; }
 	void SetMaxHP(float InMaxHP);
-	
+
+protected:
+	UFUNCTION()
+	void OnRep_CurrentHP();
+	UFUNCTION()
+	void OnRep_MaxHP();
+
+public:
 	FOnOutOfCurrentHPDelegate OnOutOfCurrentHP;
 	FOnCurrentHPChangedDelegate OnCurrentHPChanged;
 	FOnMaxHPChangedDelegate OnMaxHPChanged;
 
 private:
-	UPROPERTY()
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentHP)
 	float CurrentHP;
-	UPROPERTY()
+	UPROPERTY(ReplicatedUsing = OnRep_MaxHP)
 	float MaxHP;
 };
