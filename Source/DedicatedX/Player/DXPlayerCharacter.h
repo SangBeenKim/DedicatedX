@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -104,6 +102,8 @@ public:
 		AActor* DamageCauser
 	) override;
 	void CheckMeleeAttackHit();
+	UFUNCTION()
+	void OnDeath();
 
 private:
 	UFUNCTION(Server, Reliable)

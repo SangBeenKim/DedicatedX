@@ -14,6 +14,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "UI/UW_HPText.h"
+#include "Player/DXPlayerController.h"
+#include "Game/DXGameModeBase.h"
+#include "Game/DXGameStateBase.h"
 
 ADXPlayerCharacter::ADXPlayerCharacter()
 	: CurrentAimPitch(0.f)
@@ -58,9 +61,9 @@ void ADXPlayerCharacter::BeginPlay()
 
 		UEnhancedInputLocalPlayerSubsystem* EILPS = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
 		EILPS->AddMappingContext(InputMappingContext, 0);
-
-		
 	}
+
+	StatusComponent->OnOutOfCurrentHP.AddUObject(this, &ThisClass::OnDeath);
 }
 
 void ADXPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -193,7 +196,11 @@ float ADXPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	);
 
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	StatusComponent->ApplyDamage(ActualDamage);
+	ADXGameStateBase* DXGS = Cast<ADXGameStateBase>(UGameplayStatics::GetGameState(this));
+	if (IsValid(DXGS) && DXGS->MatchState == EMatchState::Playing)
+	{
+		StatusComponent->ApplyDamage(ActualDamage);
+	}
 
 	return ActualDamage;
 }
@@ -244,6 +251,15 @@ void ADXPlayerCharacter::CheckMeleeAttackHit()
 	FColor DrawColor = bIsHitDetected ? FColor::Green : FColor::Red;
 
 	DrawDebugMeleeAttack(DrawColor, Start, End, Forward);
+}
+
+void ADXPlayerCharacter::OnDeath()
+{
+	ADXPlayerController* PC = GetController<ADXPlayerController>();
+	if (IsValid(PC) && HasAuthority())
+	{
+		PC->OnCharacterDead();
+	}
 }
 
 void ADXPlayerCharacter::ServerRPCMeleeAttack_Implementation()

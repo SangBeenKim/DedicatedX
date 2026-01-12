@@ -56,6 +56,17 @@ void ADXGameModeBase::PreLogin(const FString& Options, const FString& Address, c
 	}
 }
 
+void ADXGameModeBase::OnCharacterDead(ADXPlayerController* InController)
+{
+	if (IsValid(InController) == false || AlivePlayerControllers.Find(InController) == INDEX_NONE)
+	{
+		return;
+	}
+
+	AlivePlayerControllers.Remove(InController);
+	DeadPlayerControllers.Add(InController);
+}
+
 void ADXGameModeBase::OnMainTimerElapesd()
 {
 	ADXGameStateBase* DXGS = GetGameState<ADXGameStateBase>();
@@ -94,7 +105,21 @@ void ADXGameModeBase::OnMainTimerElapesd()
 		break;
 	}
 	case EMatchState::Playing:
+	{
+		DXGS->AlivePlayerControllerCount = AlivePlayerControllers.Num();
+
+		FString NotificationString = FString::Printf(TEXT("%d / %d"), 
+			DXGS->AlivePlayerControllerCount, 
+			DXGS->AlivePlayerControllerCount + DeadPlayerControllers.Num());
+
+		NotifyToAllPlayer(NotificationString);
+
+		if (DXGS->AlivePlayerControllerCount <= 1)
+		{
+			DXGS->MatchState = EMatchState::Ending;
+		}
 		break;
+	}
 	case EMatchState::Ending:
 		break;
 	case EMatchState::End:

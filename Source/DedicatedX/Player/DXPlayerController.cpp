@@ -1,6 +1,8 @@
 #include "Player/DXPlayerController.h"
 #include "Net/UnrealNetwork.h"
 #include "Blueprint/UserWidget.h"
+#include "Game/DXGameModeBase.h"
+#include "Kismet/GameplayStatics.h"
 
 ADXPlayerController::ADXPlayerController()
 {
@@ -31,4 +33,13 @@ void ADXPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ThisClass, NotificationText);
+}
+
+void ADXPlayerController::OnCharacterDead()
+{
+	ADXGameModeBase* GM = Cast<ADXGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (HasAuthority() && IsValid(GM))
+	{
+		GM->OnCharacterDead(this);
+	}
 }

@@ -19,6 +19,7 @@ public:
 	virtual void Logout(AController* Exiting) override;
 	virtual void BeginPlay() override;
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
+	void OnCharacterDead(ADXPlayerController* InController);
 
 private:
 	UFUNCTION()
