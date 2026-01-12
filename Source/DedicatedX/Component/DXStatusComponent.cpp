@@ -15,10 +15,16 @@ void UDXStatusComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
 
 	DOREPLIFETIME(ThisClass, CurrentHP);
 	DOREPLIFETIME(ThisClass, MaxHP);
+	//DOREPLIFETIME_CONDITION(ThisClass, MaxHP, COND_OwnerOnly);
 }
 
 float UDXStatusComponent::ApplyDamage(float InDamage)
 {
+	if (IsValid(GetOwner()) == false || GetOwner()->HasAuthority() == false)
+	{
+		return 0.f;
+	}
+
 	const float PreviousHP = CurrentHP;
 	const float ActualDamage = FMath::Clamp<float>(InDamage, 0, PreviousHP);
 
@@ -29,6 +35,11 @@ float UDXStatusComponent::ApplyDamage(float InDamage)
 
 void UDXStatusComponent::SetCurrentHP(float InCurrentHP)
 {
+	if (IsValid(GetOwner()) == false || GetOwner()->HasAuthority() == false)
+	{
+		return;
+	}
+
 	CurrentHP = InCurrentHP;
 	if (CurrentHP <= KINDA_SMALL_NUMBER)
 	{
@@ -41,6 +52,11 @@ void UDXStatusComponent::SetCurrentHP(float InCurrentHP)
 
 void UDXStatusComponent::SetMaxHP(float InMaxHP)
 {
+	if (IsValid(GetOwner()) == false || GetOwner()->HasAuthority() == false)
+	{
+		return;
+	}
+
 	MaxHP = InMaxHP;
 	if (MaxHP < KINDA_SMALL_NUMBER)
 	{

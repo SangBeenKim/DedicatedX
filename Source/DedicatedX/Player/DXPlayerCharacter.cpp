@@ -321,3 +321,12 @@ void ADXPlayerCharacter::SetHPTextWidget(UUW_HPText* InHPTextWidget)
 	}
 }
 
+void ADXPlayerCharacter::TakeBuff(float InBuffValue)
+{
+	if (IsValid(StatusComponent))
+	{
+		StatusComponent->SetMaxHP(StatusComponent->GetMaxHP() + InBuffValue);
+		StatusComponent->SetCurrentHP(StatusComponent->GetCurrentHP() + InBuffValue);
+	}
+}
+

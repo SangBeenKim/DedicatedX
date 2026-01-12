@@ -125,6 +125,7 @@ protected:
 
 public:
 	void SetHPTextWidget(UUW_HPText* InHPTextWidget);
+	void TakeBuff(float InBuffValue);
 
 #pragma endregion
 
