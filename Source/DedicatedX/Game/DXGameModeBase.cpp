@@ -63,6 +63,8 @@ void ADXGameModeBase::OnCharacterDead(ADXPlayerController* InController)
 		return;
 	}
 
+	InController->ClientRPCShowGameResultWidget(AlivePlayerControllers.Num());
+
 	AlivePlayerControllers.Remove(InController);
 	DeadPlayerControllers.Add(InController);
 }
@@ -117,6 +119,8 @@ void ADXGameModeBase::OnMainTimerElapesd()
 		if (DXGS->AlivePlayerControllerCount <= 1)
 		{
 			DXGS->MatchState = EMatchState::Ending;
+
+			AlivePlayerControllers[0]->ClientRPCShowGameResultWidget(1);
 		}
 		break;
 	}

@@ -3,6 +3,8 @@
 #include "Blueprint/UserWidget.h"
 #include "Game/DXGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/UW_GameResult.h"
+#include "Components/TextBlock.h"
 
 ADXPlayerController::ADXPlayerController()
 {
@@ -41,5 +43,31 @@ void ADXPlayerController::OnCharacterDead()
 	if (HasAuthority() && IsValid(GM))
 	{
 		GM->OnCharacterDead(this);
+	}
+}
+
+void ADXPlayerController::ClientRPCShowGameResultWidget_Implementation(int32 InRanking)
+{
+	if (!IsLocalController()) return;
+
+	if (IsValid(GameResultUIClass))
+	{
+		UUW_GameResult* GameResultUI = CreateWidget<UUW_GameResult>(this, GameResultUIClass);
+		if (IsValid(GameResultUI))
+		{
+			GameResultUI->AddToViewport(3);
+
+			FString GameResultString = FString::Printf(TEXT("%s"), InRanking == 1 ? TEXT("Winner!") : TEXT("Looser..."));
+			GameResultUI->ResultText->SetText(FText::FromString(GameResultString));
+
+			FString RankingString = FString::Printf(TEXT("#%02d"), InRanking);
+			GameResultUI->RankingText->SetText(FText::FromString(RankingString));
+
+			FInputModeUIOnly Mode;
+			Mode.SetWidgetToFocus(GameResultUI->GetCachedWidget());
+			SetInputMode(Mode);
+
+			bShowMouseCursor = true;
+		}
 	}
 }
