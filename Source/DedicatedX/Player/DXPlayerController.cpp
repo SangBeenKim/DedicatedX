@@ -46,6 +46,14 @@ void ADXPlayerController::OnCharacterDead()
 	}
 }
 
+void ADXPlayerController::ClientRPCReturnToTitle_Implementation()
+{
+	if (IsLocalController())
+	{
+		UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Title")), true);
+	}
+}
+
 void ADXPlayerController::ClientRPCShowGameResultWidget_Implementation(int32 InRanking)
 {
 	if (!IsLocalController()) return;

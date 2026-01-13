@@ -1,6 +1,7 @@
 #include "Game/DXGameModeBase.h"
 #include "Player/DXPlayerController.h"
 #include "Game/DXGameStateBase.h"
+#include "Kismet/GameplayStatics.h"
 
 ADXGameModeBase::ADXGameModeBase()
 {
@@ -40,6 +41,7 @@ void ADXGameModeBase::BeginPlay()
 
 	GetWorld()->GetTimerManager().SetTimer(MainTimerHandle, this, &ThisClass::OnMainTimerElapesd, 1.f, true);
 	RemainWaitingTimeForPlaying = WaitingTime;
+	RemainWaitingTimeForEnding = EndingTime;
 }
 
 void ADXGameModeBase::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
@@ -125,7 +127,33 @@ void ADXGameModeBase::OnMainTimerElapesd()
 		break;
 	}
 	case EMatchState::Ending:
+	{
+		FString NotificationString = FString::Printf(TEXT("Waiting %d for returning to title."), RemainWaitingTimeForEnding);
+
+		NotifyToAllPlayer(NotificationString);
+
+		--RemainWaitingTimeForEnding;
+
+		if (RemainWaitingTimeForEnding <= 0)
+		{
+			for (auto AliveController : AlivePlayerControllers)
+			{
+				AliveController->ClientRPCReturnToTitle();
+			}
+
+			for (auto DeadController : DeadPlayerControllers)
+			{
+				DeadController->ClientRPCReturnToTitle();
+			}
+
+			FName CurrentLevelName = FName(UGameplayStatics::GetCurrentLevelName(this));
+			UGameplayStatics::OpenLevel(this, CurrentLevelName, true, FString(TEXT("listen")));
+
+			return;
+		}
+
 		break;
+	}
 	case EMatchState::End:
 		break;
 	default:

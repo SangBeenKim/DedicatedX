@@ -20,6 +20,8 @@ public:
 	void OnCharacterDead();
 	UFUNCTION(Client, Reliable)
 	void ClientRPCShowGameResultWidget(int32 InRanking);
+	UFUNCTION(Client, Reliable)
+	void ClientRPCReturnToTitle();
 
 public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
