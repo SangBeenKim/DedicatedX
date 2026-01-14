@@ -14,6 +14,8 @@ public class DedicatedX : ModuleRules
 
 			"UMG",
 
+			"OnlineSubsystem", "OnlineSubsystemUtils",
+
 		});
 
 		PublicIncludePaths.AddRange(new string[] 
